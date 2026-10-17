@@ -4,6 +4,9 @@ pipeline {
     environment {
         SONAR_PROJECT_KEY = 'multi-ai-agent'
         SONAR_SCANNER_HOME = tool 'Sonarqube'
+        AWS_REGION = 'ap-southeast-2'
+        ECR_REPO = 'multi-ai-agent'
+        IMAGE_TAG = 'latest'
     }
 
     stages {
@@ -37,10 +40,25 @@ pipeline {
             }
         }
 
-        stage('Build Docker image') {
+        stage('Build and Push Docker Image to ECR') {
             steps {
-                sh 'docker --version'
-                sh 'docker build -t multi-ai-agent:jenkins .'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-token']]) {
+                    script {
+                        def accountId = sh(
+                            script: "aws sts get-caller-identity --region ${env.AWS_REGION} --query Account --output text",
+                            returnStdout: true
+                        ).trim()
+                        def registry = "${accountId}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+                        def ecrUrl = "${registry}/${env.ECR_REPO}"
+
+                        sh """
+                        aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${registry}
+                        docker build -t ${env.ECR_REPO}:${env.IMAGE_TAG} .
+                        docker tag ${env.ECR_REPO}:${env.IMAGE_TAG} ${ecrUrl}:${env.IMAGE_TAG}
+                        docker push ${ecrUrl}:${env.IMAGE_TAG}
+                        """
+                    }
+                }
             }
         }
 
