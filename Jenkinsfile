@@ -8,7 +8,7 @@ pipeline {
         ECR_REPO = 'multi-ai-agent'
         IMAGE_TAG = 'latest'
         ECS_CLUSTER = 'multi-ai-agent-cluster'
-        ECS_SERVICE = 'multi-ai-agent-service'
+        ECS_SERVICE = 'multi-ai-agent-def-service-mn052znx'
     }
 
     stages {
