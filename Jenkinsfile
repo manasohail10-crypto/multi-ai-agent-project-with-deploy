@@ -7,6 +7,8 @@ pipeline {
         AWS_REGION = 'ap-southeast-2'
         ECR_REPO = 'multi-ai-agent'
         IMAGE_TAG = 'latest'
+        ECS_CLUSTER = 'multi-ai-agent-cluster'
+        ECS_SERVICE = 'multi-ai-agent-service'
     }
 
     stages {
@@ -62,9 +64,17 @@ pipeline {
             }
         }
 
-        stage('Show images') {
+        stage('Deploy to ECS Fargate') {
             steps {
-                sh 'docker images | head -n 5'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-token']]) {
+                    sh """
+                    aws ecs update-service \
+                      --cluster ${env.ECS_CLUSTER} \
+                      --service ${env.ECS_SERVICE} \
+                      --force-new-deployment \
+                      --region ${env.AWS_REGION}
+                    """
+                }
             }
         }
     }
