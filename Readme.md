@@ -652,6 +652,6 @@ Add a `LICENSE` file and name the license here (for example MIT) before you shar
 
 ## Author
 
-Your Name · [GitHub](https://github.com/YOUR_USERNAME)
+[Anas Sohail](https://github.com/manasohail10-crypto)
 
 Built as an end-to-end project covering AI agents, APIs, containers, CI/CD, and cloud deployment.
